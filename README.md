@@ -2,7 +2,8 @@
 
 A simple yet powerful drawing editor built with Next.js, tldraw, and tRPC.
 
-![TLDraw Editor Screenshot](<img width="1431" alt="image" src="https://github.com/user-attachments/assets/a7e2b3c6-54e9-463a-b734-2e9a3217bab4" />)
+![TLDraw Editor Screenshot](<img width="1414" alt="image" src="https://github.com/user-attachments/assets/318558cc-10ba-4527-8d4b-ee3746931448" />
+)
 
 ## Technologies Used
 
@@ -25,7 +26,7 @@ A simple yet powerful drawing editor built with Next.js, tldraw, and tRPC.
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/nashmonzon/tldraw-editor.git
+git clone https://github.com/nashmonzon/My-tldraw-project.git
 cd tldraw-editor
 
 ### Step 2: Install Dependencies
