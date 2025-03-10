@@ -1,7 +1,6 @@
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { appRouter } from "@/lib/trpc/server";
 
-// Create a handler for the Next.js API route
 const handler = (req: Request) =>
   fetchRequestHandler({
     endpoint: "/api/trpc",
