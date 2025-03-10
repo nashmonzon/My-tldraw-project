@@ -1,12 +1,16 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Tldraw, type TLEventMapHandler } from "tldraw";
+import { Tldraw, TLEventMapHandler } from "tldraw";
 import { trpc } from "@/lib/trpc/client";
 import { Button } from "@/components/ui/button";
-import { Loader2, Save, Square, Palette } from "lucide-react";
+import { Loader2, Save, Square, Palette, Home } from "lucide-react";
 import { toast } from "sonner";
+
+import Link from "next/link";
 import "tldraw/tldraw.css";
+import { ErrorBoundary } from "./error-boundary";
+import { LoadingSpinner } from "./loading-spinner";
 
 export default function EditorPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -19,8 +23,15 @@ export default function EditorPage() {
   const isInitialLoadRef = useRef(true);
   const shouldSaveRef = useRef(false);
 
-  const { isLoading: isLoadingData, data: documentData } =
-    trpc.document.getDocument.useQuery(undefined);
+  const {
+    isLoading: isLoadingData,
+    data: documentData,
+    error: loadError,
+    refetch,
+  } = trpc.document.getDocument.useQuery(undefined, {
+    retry: 1,
+    retryDelay: 1000,
+  });
 
   const saveDocument = trpc.document.saveDocument.useMutation({
     onSuccess: () => {
@@ -30,8 +41,12 @@ export default function EditorPage() {
       setIsSaving(false);
     },
     onError: (error) => {
-      toast.error("Error saving document", {
+      toast.error("Failed to save document", {
         description: error.message,
+        action: {
+          label: "Retry",
+          onClick: handleSave,
+        },
       });
       setIsSaving(false);
     },
@@ -89,7 +104,11 @@ export default function EditorPage() {
     selectedShapeIds.forEach((id: string) => {
       const shape = editorRef.getShape(id);
       if (shape) {
-        if (shape.type === "geo") {
+        if (shape.type === "image") {
+          toast.error("Cannot modify image shape", {
+            description: "Image shapes do not support color modification.",
+          });
+        } else if (shape.type === "geo") {
           editorRef.updateShapes([
             {
               id,
@@ -126,10 +145,11 @@ export default function EditorPage() {
           ]);
         }
       }
-    });
-
-    toast.success("Shape modified", {
-      description: `Modified ${selectedShapeIds.length} shape(s).`,
+      if (shape.type !== "image") {
+        toast.success("Shape modified", {
+          description: `Modified ${selectedShapeIds.length} shape(s).`,
+        });
+      }
     });
   }, [editorRef]);
 
@@ -151,10 +171,15 @@ export default function EditorPage() {
         console.error("Error loading document data:", error);
         toast.error("Error loading document", {
           description: "Could not load the document data.",
+          action: {
+            label: "Retry",
+            onClick: () => refetch(),
+          },
         });
       }
     }
-  }, [editorRef, documentData, isLoading]);
+  }, [editorRef, documentData, isLoading, refetch]);
+
   useEffect(() => {
     if (!editorRef) return;
 
@@ -210,7 +235,7 @@ export default function EditorPage() {
             console.log("Enviando al backend:", lastEventRef.current);
             shouldSaveRef.current = false;
           }
-        }, 1500);
+        }, 500);
       }
     };
 
@@ -227,55 +252,93 @@ export default function EditorPage() {
     };
   }, [editorRef, saveDocument]);
 
-  return (
-    <div className="flex flex-col h-screen w-full">
-      <div className="flex justify-between items-center p-2 border-b bg-background z-10">
-        <h1 className="text-xl font-bold">tldraw Editor</h1>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={addSquare}
-            className="flex items-center gap-2"
-          >
-            <Square className="h-4 w-4" />
-            Add Square
-          </Button>
-          <Button
-            variant="outline"
-            onClick={modifySelectedShape}
-            disabled={!hasSelection}
-            className="flex items-center gap-2"
-          >
-            <Palette className="h-4 w-4" />
-            Modify Shape
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="flex items-center gap-2"
-          >
-            {isSaving ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4" />
-            )}
-            Save
-          </Button>
+  if (loadError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <div className="flex flex-col items-center max-w-md text-center">
+          <Loader2 className="h-16 w-16 text-destructive mb-4" />
+          <h2 className="text-2xl font-bold mb-2">Failed to load document</h2>
+          <p className="text-muted-foreground mb-6">
+            {loadError.message ||
+              "An unexpected error occurred while loading the document."}
+          </p>
+          <div className="flex gap-4">
+            <Button onClick={() => refetch()} variant="outline">
+              Try again
+            </Button>
+            <Link href="/">
+              <Button>
+                <Home className="h-4 w-4 mr-2" />
+                Back to Home
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
+    );
+  }
 
-      <div className="flex-1 relative">
-        {isLoadingData ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-50">
-            <Loader2 className="h-8 w-8 animate-spin" />
+  return (
+    <ErrorBoundary>
+      <div className="flex flex-col h-screen w-full">
+        <div className="flex justify-between items-center p-2 border-b bg-background z-10">
+          <div className="flex items-center gap-2">
+            <Link href="/">
+              <Button variant="ghost" size="icon">
+                <Home className="h-5 w-5" />
+              </Button>
+            </Link>
+            <h1 className="text-xl font-bold">tldraw Editor</h1>
           </div>
-        ) : null}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={addSquare}
+              className="flex items-center gap-2"
+            >
+              <Square className="h-4 w-4" />
+              Add Square
+            </Button>
+            <Button
+              variant="outline"
+              onClick={modifySelectedShape}
+              disabled={!hasSelection}
+              className="flex items-center gap-2"
+            >
+              <Palette className="h-4 w-4" />
+              Modify Shape
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="flex items-center gap-2"
+            >
+              {isSaving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}
+              Save
+            </Button>
+          </div>
+        </div>
 
-        <Tldraw
-          persistenceKey="tldraw-document"
-          onMount={(editor) => setEditorRef(editor)}
-        />
+        <div className="flex-1 relative">
+          {isLoadingData ? (
+            <LoadingSpinner
+              fullScreen
+              size="lg"
+              text="Loading document data..."
+            />
+          ) : (
+            <Tldraw
+              persistenceKey="tldraw-document"
+              options={{ maxPages: 1 }}
+              onMount={(editor) => setEditorRef(editor)}
+            />
+          )}
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 }
