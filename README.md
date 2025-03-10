@@ -2,8 +2,7 @@
 
 A simple yet powerful drawing editor built with Next.js, tldraw, and tRPC.
 
-![TLDraw Editor Screenshot](<img width="1414" alt="image" src="https://github.com/user-attachments/assets/318558cc-10ba-4527-8d4b-ee3746931448" />
-)
+     ![Screenshot Description](./public/home.png)
 
 ## Technologies Used
 
@@ -25,7 +24,7 @@ A simple yet powerful drawing editor built with Next.js, tldraw, and tRPC.
 
 ### Step 1: Clone the Repository
 
-```bash
+````bash
 git clone https://github.com/nashmonzon/My-tldraw-project.git
 cd tldraw-editor
 
@@ -35,7 +34,7 @@ Using pnpm (recommended):
 
 ```shellscript
 pnpm install
-```
+````
 
 Alternative package managers:
 
@@ -91,7 +90,6 @@ tldraw-editor/
 3. Use the tldraw interface to create and edit drawings
 4. Changes are automatically saved
 
-
 ## Testing the API
 
 The application uses tRPC for type-safe API calls between the client and server. You can test the API endpoints using the followin method:
@@ -103,7 +101,6 @@ The application uses tRPC for type-safe API calls between the client and server.
 3. Filter for "trpc" requests
 4. Interact with the editor to see API calls being made
 5. Examine the request/response data
-
 
 ### Updating Dependencies
 
