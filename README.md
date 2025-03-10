@@ -50,7 +50,7 @@ yarn install
 ### Step 3: Run the Development Server
 
 ```shellscript
-pnpm dev
+pnpm run dev
 ```
 
 The application will be available at [http://localhost:3000](http://localhost:3000).
