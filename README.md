@@ -89,7 +89,9 @@ tldraw-editor/
 1. Open your browser and navigate to [http://localhost:3000](http://localhost:3000)
 2. Click on "Open Editor" to access the drawing canvas
 3. Use the tldraw interface to create and edit drawings
-4. Changes are automatically saved
+4. Create a New Shape: You can add new shapes to the canvas using the button Add Square.
+5. Modify Selected Shapes: If a shape is selected, you can modify its properties, such as color and size using the button Modify Shape.
+6. Changes are automatically saved or using the button Save
 
 ## Testing the API
 
