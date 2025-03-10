@@ -2,7 +2,7 @@
 
 A simple yet powerful drawing editor built with Next.js, tldraw, and tRPC.
 
-     ![Screenshot Description](./public/home.png)
+![Screenshot Description](./public/home.png)
 
 ## Technologies Used
 
