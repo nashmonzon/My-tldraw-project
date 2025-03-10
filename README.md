@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TLDraw Editor
 
-## Getting Started
+A simple yet powerful drawing editor built with Next.js, tldraw, and tRPC.
 
-First, run the development server:
+![TLDraw Editor Screenshot](<img width="1431" alt="image" src="https://github.com/user-attachments/assets/a7e2b3c6-54e9-463a-b734-2e9a3217bab4" />)
+
+## Technologies Used
+
+- **Next.js 15**: React framework for server-rendered applications
+- **React 18**: JavaScript library for building user interfaces
+- **tldraw**: Drawing and diagramming tool
+- **tRPC**: End-to-end typesafe API layer
+- **TailwindCSS**: Utility-first CSS framework
+- **Shadcn UI**: Reusable UI components
+- **Node.js 22**: JavaScript runtime
+- **pnpm**: Fast, disk space efficient package manager
+
+## Installation and Setup
+
+### Prerequisites
+
+- Node.js 22 or later
+- pnpm (recommended) or npm/yarn
+
+### Step 1: Clone the Repository
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/nashmonzon/tldraw-editor.git
+cd tldraw-editor
+
+### Step 2: Install Dependencies
+
+Using pnpm (recommended):
+
+```shellscript
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Alternative package managers:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```shellscript
+# Using npm
+npm install
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Using yarn
+yarn install
+```
 
-## Learn More
+### Step 3: Run the Development Server
 
-To learn more about Next.js, take a look at the following resources:
+```shellscript
+pnpm dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The application will be available at [http://localhost:3000](http://localhost:3000).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+```plaintext
+tldraw-editor/
+├── app/                  # Next.js app directory
+│   ├── api/              # API routes
+│   │   └── trpc/         # tRPC API endpoints
+│   │       └── [trpc]
+│   │           └── route.ts
+│   ├── editor/           # Editor page
+│   │   └── page.tsx
+│   ├── error.tsx         # Error page
+│   ├── global.css        # Global styles
+│   ├── layout.tsx        # Application layout
+│   ├── loading.tsx       # Loading indicator
+│   └── page.tsx          # Home page
+├── components/           # React components
+│   ├── ui/               # Shadcn UI components
+│   ├── editor-page.tsx   # Editor page component
+│   ├── error-boundary.tsx# Error boundary component
+│   └── loading-spinner.tsx # Loading spinner component
+├── lib/                  # Utility functions
+│   └── trpc/             # tRPC configuration
+│       ├── client.tsx    # tRPC client configuration
+│       └── server.ts     # tRPC routers
+│   └── util.ts           # Additional utility functions
+└── public/               # Static assets
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Using the Application
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Open your browser and navigate to [http://localhost:3000](http://localhost:3000)
+2. Click on "Open Editor" to access the drawing canvas
+3. Use the tldraw interface to create and edit drawings
+4. Changes are automatically saved
+
+
+## Testing the API
+
+The application uses tRPC for type-safe API calls between the client and server. You can test the API endpoints using the followin method:
+
+### Method 1: Using the Browser Developer Tools
+
+1. Open your browser's developer tools (F12 or Right-click > Inspect)
+2. Go to the Network tab
+3. Filter for "trpc" requests
+4. Interact with the editor to see API calls being made
+5. Examine the request/response data
+
+
+### Updating Dependencies
+
+To update all dependencies to their latest versions:
+
+```shellscript
+pnpm update
+```
