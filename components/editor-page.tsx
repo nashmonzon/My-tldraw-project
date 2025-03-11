@@ -227,15 +227,17 @@ export default function EditorPage() {
           clearTimeout(debounceTimeoutRef.current);
         }
 
+        const timeoutDuration = changeType.startsWith("deleted") ? 0 : 500;
+
         debounceTimeoutRef.current = setTimeout(() => {
           if (shouldSaveRef.current && editorRef) {
             setIsSaving(true);
             const snapshot = editorRef.store.getSnapshot();
             saveDocument.mutate(snapshot);
-            console.log("Enviando al backend:", lastEventRef.current);
+
             shouldSaveRef.current = false;
           }
-        }, 500);
+        }, timeoutDuration);
       }
     };
 
