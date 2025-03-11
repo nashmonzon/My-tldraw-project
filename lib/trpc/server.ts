@@ -1,83 +1,124 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import { z } from "zod";
+import { documentStore } from "../document-store";
 
-// Create a simple in-memory store for the document data
-// In a real app, you would use a database
-type DocumentData = {
-  version: number;
-  shapes: Record<string, unknown>;
-  bindings: Record<string, unknown>;
-  assets: Record<string, unknown>;
-};
-let documentStore: DocumentData | null = null;
 const t = initTRPC.create();
 
-// Create the router
 export const appRouter = t.router({
   document: t.router({
-    getDocument: t.procedure.query(async () => {
+    getDocuments: t.procedure.query(async () => {
       try {
-        // Simulate a delay to show loading state
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const documents = await documentStore.getDocuments();
 
-        // Simulate a random error (10% chance) for testing error handling
-        if (Math.random() < 0.1) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to retrieve document data from the server",
-          });
-        }
-
-        // Return the document data or a default empty document
-        return (
-          documentStore || {
-            version: 1,
-            shapes: {},
-            bindings: {},
-            assets: {},
-          }
-        );
+        return documents.map((doc) => ({
+          id: doc.id,
+          title: doc.title,
+          createdAt: doc.createdAt,
+          updatedAt: doc.updatedAt,
+        }));
       } catch (error) {
-        console.error("Error retrieving document:", error);
+        console.error("Error retrieving documents:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message:
             error instanceof Error
               ? error.message
-              : "Failed to retrieve document",
+              : "Failed to retrieve documents",
         });
       }
     }),
 
-    saveDocument: t.procedure.input(z.any()).mutation(async ({ input }) => {
-      try {
-        // Simulate a delay to show saving state
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+    getDocument: t.procedure
+      .input(z.object({ id: z.string() }))
+      .query(async ({ input }) => {
+        try {
+          const document = await documentStore.getDocument(input.id);
 
-        // Simulate a random error (10% chance) for testing error handling
-        if (Math.random() < 0.1) {
+          if (!document) {
+            return {
+              version: 1,
+              shapes: {},
+              bindings: {},
+              assets: {},
+            };
+          }
+
+          return (
+            document.data || {
+              version: 1,
+              shapes: {},
+              bindings: {},
+              assets: {},
+            }
+          );
+        } catch (error) {
+          console.error("Error retrieving document:", error);
+          return {
+            version: 1,
+            shapes: {},
+            bindings: {},
+            assets: {},
+          };
+        }
+      }),
+
+    createDocument: t.procedure
+      .input(z.object({ title: z.string().default("Untitled Document") }))
+      .mutation(async ({ input }) => {
+        try {
+          const newDoc = await documentStore.createDocument(input.title);
+
+          return {
+            id: newDoc.id,
+            title: newDoc.title,
+          };
+        } catch (error) {
+          console.error("Error creating document:", error);
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: "Failed to save document data to the server",
+            message:
+              error instanceof Error
+                ? error.message
+                : "Failed to create document",
           });
         }
+      }),
 
-        // Save the document data
-        documentStore = input;
+    saveDocument: t.procedure
+      .input(
+        z.object({
+          id: z.string(),
+          data: z.any(),
+          title: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        try {
+          const success = await documentStore.saveDocument(
+            input.id,
+            input.data,
+            input.title
+          );
 
-        return { success: true };
-      } catch (error) {
-        console.error("Error saving document:", error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message:
-            error instanceof Error ? error.message : "Failed to save document",
-        });
-      }
-    }),
+          if (!success) {
+            await documentStore.createDocument(
+              input.title || "Untitled Document"
+            );
+          }
+
+          return { success: true };
+        } catch (error) {
+          console.error("Error saving document:", error);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message:
+              error instanceof Error
+                ? error.message
+                : "Failed to save document",
+          });
+        }
+      }),
   }),
 });
 
-// Export type router type signature,
-// NOT the router itself.
 export type AppRouter = typeof appRouter;
