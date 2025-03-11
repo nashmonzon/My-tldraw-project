@@ -21,6 +21,7 @@ export interface DocumentClient {
   title: string;
   createdAt: string;
   updatedAt: string;
+  data: Document["data"];
 }
 
 export type Error = TRPCClientErrorLike<{

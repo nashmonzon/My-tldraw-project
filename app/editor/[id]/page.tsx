@@ -12,11 +12,12 @@ interface EditorRouteProps {
 }
 
 export default async function EditorRoute({ params }: EditorRouteProps) {
-  if (!params.id) {
+  const { id } = await params;
+  if (!id) {
     return notFound();
   }
 
-  const document = await getDocumentById(params.id);
+  const document = await getDocumentById(id);
   if (!document) {
     return notFound();
   }
@@ -24,7 +25,7 @@ export default async function EditorRoute({ params }: EditorRouteProps) {
   return (
     <Suspense fallback={<Loading />}>
       <EditorPage
-        documentId={params.id}
+        documentId={id}
         initialDocumentData={document.data}
         documentTitle={document.info.title}
       />
