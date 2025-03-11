@@ -1,12 +1,14 @@
-import { createCaller } from "@/lib/trpc/server-client";
 import HomePage from "@/components/home-page";
+import { Suspense } from "react";
+import Loading from "./loading";
+import { getDocuments } from "./actions/documents";
 
 export default async function HomeRoute() {
-  const caller = createCaller();
-  const documents = await caller.document.getDocuments();
-  if (!documents) {
-    return <HomePage initialDocuments={[]} />;
-  }
+  const documentsPromise = getDocuments();
 
-  return <HomePage initialDocuments={documents} />;
+  return (
+    <Suspense fallback={<Loading />}>
+      <HomePage initialDocuments={await documentsPromise} />
+    </Suspense>
+  );
 }

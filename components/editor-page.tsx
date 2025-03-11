@@ -10,10 +10,11 @@ import Link from "next/link";
 import "tldraw/tldraw.css";
 import { ErrorBoundary } from "./error-boundary";
 import { LoadingSpinner } from "./loading-spinner";
+import { DocumentClient } from "@/lib/document-store";
 
 interface EditorPageProps {
   documentId: string;
-  initialDocumentData: any;
+  initialDocumentData: DocumentClient["data"];
   documentTitle?: string;
 }
 

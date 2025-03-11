@@ -1,6 +1,8 @@
 import { v4 as uuidv4 } from "uuid";
 import fs from "fs";
 import path from "path";
+import { TRPCClientErrorLike } from "@trpc/client";
+import { DefaultErrorShape } from "@trpc/server/unstable-core-do-not-import";
 
 export interface Document {
   id: string;
@@ -14,6 +16,17 @@ export interface Document {
     assets: Record<string, unknown>;
   };
 }
+export interface DocumentClient {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type Error = TRPCClientErrorLike<{
+  errorShape: DefaultErrorShape;
+  transformer: false;
+}> | null;
 
 const DATA_FILE = path.join(process.cwd(), ".document-store.json");
 

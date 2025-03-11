@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
 import EditorPage from "@/components/editor-page";
-import { createCaller } from "@/lib/trpc/server-client";
+import { Suspense } from "react";
+
+import { getDocumentById } from "@/app/actions/documents";
+import Loading from "@/app/loading";
 
 interface EditorRouteProps {
   params: {
@@ -13,31 +16,18 @@ export default async function EditorRoute({ params }: EditorRouteProps) {
     return notFound();
   }
 
-  const caller = createCaller();
-  const documents = await caller.document.getDocuments();
-  const documentInfo = documents.find((doc) => doc.id === params.id);
-
-  const documentData = await caller.document.getDocument({ id: params.id });
-
-  let docInfo = documentInfo;
-  if (!docInfo && documentData) {
-    docInfo = {
-      id: params.id,
-      title: "Untitled Document",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-  }
-
-  if (!docInfo) {
+  const document = await getDocumentById(params.id);
+  if (!document) {
     return notFound();
   }
 
   return (
-    <EditorPage
-      documentId={params.id}
-      initialDocumentData={documentData}
-      documentTitle={docInfo.title}
-    />
+    <Suspense fallback={<Loading />}>
+      <EditorPage
+        documentId={params.id}
+        initialDocumentData={document.data}
+        documentTitle={document.info.title}
+      />
+    </Suspense>
   );
 }
