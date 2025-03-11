@@ -1,19 +1,28 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Tldraw, TLEventMapHandler } from "tldraw";
+import { Tldraw, type TLEventMapHandler } from "tldraw";
 import { trpc } from "@/lib/trpc/client";
 import { Button } from "@/components/ui/button";
 import { Loader2, Save, Square, Palette, Home } from "lucide-react";
 import { toast } from "sonner";
-
 import Link from "next/link";
 import "tldraw/tldraw.css";
 import { ErrorBoundary } from "./error-boundary";
 import { LoadingSpinner } from "./loading-spinner";
 
-export default function EditorPage() {
-  const [isLoading, setIsLoading] = useState(true);
+interface EditorPageProps {
+  documentId: string;
+  initialDocumentData: any;
+  documentTitle?: string;
+}
+
+export default function EditorPage({
+  documentId,
+  initialDocumentData,
+  documentTitle = "Untitled Document",
+}: EditorPageProps) {
+  const [isLoading, setIsLoading] = useState(!!initialDocumentData);
   const [isSaving, setIsSaving] = useState(false);
   const [editorRef, setEditorRef] = useState<any | null>(null);
   const [hasSelection, setHasSelection] = useState(false);
@@ -23,16 +32,8 @@ export default function EditorPage() {
   const isInitialLoadRef = useRef(true);
   const shouldSaveRef = useRef(false);
 
-  const {
-    isLoading: isLoadingData,
-    data: documentData,
-    error: loadError,
-    refetch,
-  } = trpc.document.getDocument.useQuery(undefined, {
-    retry: 1,
-    retryDelay: 1000,
-  });
-
+  // Ya no necesitamos la consulta getDocument porque recibimos los datos como prop
+  // Pero mantenemos la mutación para guardar cambios
   const saveDocument = trpc.document.saveDocument.useMutation({
     onSuccess: () => {
       toast.success("Document saved", {
@@ -56,9 +57,12 @@ export default function EditorPage() {
     if (editorRef) {
       setIsSaving(true);
       const snapshot = editorRef.store.getSnapshot();
-      saveDocument.mutate(snapshot);
+      saveDocument.mutate({
+        id: documentId,
+        data: snapshot,
+      });
     }
-  }, [editorRef, saveDocument]);
+  }, [editorRef, saveDocument, documentId]);
 
   const addSquare = useCallback(() => {
     if (editorRef) {
@@ -153,32 +157,39 @@ export default function EditorPage() {
     });
   }, [editorRef]);
 
+  // Cargar los datos iniciales cuando el editor esté listo
   useEffect(() => {
-    if (!isLoadingData && isLoading) {
-      setIsLoading(false);
-      toast.success("Document loaded", {
-        description: "Your document has been loaded successfully.",
-      });
-    }
-  }, [isLoadingData, isLoading]);
+    console.log(
+      "Editor mount effect:",
+      editorRef,
+      initialDocumentData,
+      isInitialLoadRef.current
+    );
 
-  useEffect(() => {
-    if (editorRef && documentData && !isLoading && isInitialLoadRef.current) {
+    if (editorRef) {
+      // Si no hay datos iniciales o ya se cargaron, simplemente establecer isLoading a false
+      if (!initialDocumentData || !isInitialLoadRef.current) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        editorRef.store.loadSnapshot(documentData);
+        editorRef.store.loadSnapshot(initialDocumentData);
         isInitialLoadRef.current = false;
+        setIsLoading(false);
+        toast.success("Document loaded", {
+          description: "Your document has been loaded successfully.",
+        });
       } catch (error) {
         console.error("Error loading document data:", error);
         toast.error("Error loading document", {
           description: "Could not load the document data.",
-          action: {
-            label: "Retry",
-            onClick: () => refetch(),
-          },
         });
+        // Incluso si hay un error, debemos salir del estado de carga
+        setIsLoading(false);
       }
     }
-  }, [editorRef, documentData, isLoading, refetch]);
+  }, [editorRef, initialDocumentData]);
 
   useEffect(() => {
     if (!editorRef) return;
@@ -233,7 +244,10 @@ export default function EditorPage() {
           if (shouldSaveRef.current && editorRef) {
             setIsSaving(true);
             const snapshot = editorRef.store.getSnapshot();
-            saveDocument.mutate(snapshot);
+            saveDocument.mutate({
+              id: documentId,
+              data: snapshot,
+            });
 
             shouldSaveRef.current = false;
           }
@@ -252,30 +266,25 @@ export default function EditorPage() {
         clearTimeout(debounceTimeoutRef.current);
       }
     };
-  }, [editorRef, saveDocument]);
+  }, [editorRef, saveDocument, documentId]);
 
-  if (loadError) {
+  // Agregar este useEffect después de los otros
+  useEffect(() => {
+    // Timeout de seguridad para evitar carga infinita
+    const safetyTimeout = setTimeout(() => {
+      if (isLoading) {
+        console.warn("Safety timeout triggered: forcing load completion");
+        setIsLoading(false);
+      }
+    }, 5000); // 5 segundos de timeout
+
+    return () => clearTimeout(safetyTimeout);
+  }, [isLoading]);
+
+  if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <div className="flex flex-col items-center max-w-md text-center">
-          <Loader2 className="h-16 w-16 text-destructive mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Failed to load document</h2>
-          <p className="text-muted-foreground mb-6">
-            {loadError.message ||
-              "An unexpected error occurred while loading the document."}
-          </p>
-          <div className="flex gap-4">
-            <Button onClick={() => refetch()} variant="outline">
-              Try again
-            </Button>
-            <Link href="/">
-              <Button>
-                <Home className="h-4 w-4 mr-2" />
-                Back to Home
-              </Button>
-            </Link>
-          </div>
-        </div>
+        <LoadingSpinner fullScreen size="lg" text="Loading document data..." />
       </div>
     );
   }
@@ -290,7 +299,7 @@ export default function EditorPage() {
                 <Home className="h-5 w-5" />
               </Button>
             </Link>
-            <h1 className="text-xl font-bold">tldraw Editor</h1>
+            <h1 className="text-xl font-bold">{documentTitle}</h1>
           </div>
           <div className="flex gap-2">
             <Button
@@ -326,19 +335,11 @@ export default function EditorPage() {
         </div>
 
         <div className="flex-1 relative">
-          {isLoadingData ? (
-            <LoadingSpinner
-              fullScreen
-              size="lg"
-              text="Loading document data..."
-            />
-          ) : (
-            <Tldraw
-              persistenceKey="tldraw-document"
-              options={{ maxPages: 1 }}
-              onMount={(editor) => setEditorRef(editor)}
-            />
-          )}
+          <Tldraw
+            persistenceKey={`tldraw-document-${documentId}`}
+            options={{ maxPages: 1 }}
+            onMount={(editor) => setEditorRef(editor)}
+          />
         </div>
       </div>
     </ErrorBoundary>
