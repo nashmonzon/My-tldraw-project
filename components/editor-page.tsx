@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Tldraw, type TLEventMapHandler } from "tldraw";
+import { Editor, Tldraw, type TLEventMapHandler } from "tldraw";
 import { trpc } from "@/lib/trpc/client";
 import { Button } from "@/components/ui/button";
 import { Loader2, Save, Square, Palette, Home } from "lucide-react";
@@ -9,11 +9,12 @@ import { toast } from "sonner";
 import Link from "next/link";
 import "tldraw/tldraw.css";
 import { ErrorBoundary } from "./error-boundary";
-import { LoadingSpinner } from "./loading-spinner";
+
+import { DocumentClient } from "@/lib/document-store";
 
 interface EditorPageProps {
   documentId: string;
-  initialDocumentData: any;
+  initialDocumentData: DocumentClient["data"];
   documentTitle?: string;
 }
 
@@ -32,8 +33,6 @@ export default function EditorPage({
   const isInitialLoadRef = useRef(true);
   const shouldSaveRef = useRef(false);
 
-  // Ya no necesitamos la consulta getDocument porque recibimos los datos como prop
-  // Pero mantenemos la mutación para guardar cambios
   const saveDocument = trpc.document.saveDocument.useMutation({
     onSuccess: () => {
       toast.success("Document saved", {
@@ -157,17 +156,8 @@ export default function EditorPage({
     });
   }, [editorRef]);
 
-  // Cargar los datos iniciales cuando el editor esté listo
-  useEffect(() => {
-    console.log(
-      "Editor mount effect:",
-      editorRef,
-      initialDocumentData,
-      isInitialLoadRef.current
-    );
-
+  const loadDocument = useCallback(() => {
     if (editorRef) {
-      // Si no hay datos iniciales o ya se cargaron, simplemente establecer isLoading a false
       if (!initialDocumentData || !isInitialLoadRef.current) {
         setIsLoading(false);
         return;
@@ -185,7 +175,7 @@ export default function EditorPage({
         toast.error("Error loading document", {
           description: "Could not load the document data.",
         });
-        // Incluso si hay un error, debemos salir del estado de carga
+
         setIsLoading(false);
       }
     }
@@ -268,26 +258,24 @@ export default function EditorPage({
     };
   }, [editorRef, saveDocument, documentId]);
 
-  // Agregar este useEffect después de los otros
   useEffect(() => {
-    // Timeout de seguridad para evitar carga infinita
     const safetyTimeout = setTimeout(() => {
       if (isLoading) {
         console.warn("Safety timeout triggered: forcing load completion");
         setIsLoading(false);
       }
-    }, 5000); // 5 segundos de timeout
+    }, 5000);
 
     return () => clearTimeout(safetyTimeout);
   }, [isLoading]);
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <LoadingSpinner fullScreen size="lg" text="Loading document data..." />
-      </div>
-    );
-  }
+  const handleMount = useCallback(
+    (editor: Editor) => {
+      setEditorRef(editor);
+      loadDocument();
+    },
+    [loadDocument]
+  );
 
   return (
     <ErrorBoundary>
@@ -338,7 +326,7 @@ export default function EditorPage({
           <Tldraw
             persistenceKey={`tldraw-document-${documentId}`}
             options={{ maxPages: 1 }}
-            onMount={(editor) => setEditorRef(editor)}
+            onMount={handleMount}
           />
         </div>
       </div>

@@ -15,6 +15,7 @@ export const appRouter = t.router({
           title: doc.title,
           createdAt: doc.createdAt,
           updatedAt: doc.updatedAt,
+          data: doc.data,
         }));
       } catch (error) {
         console.error("Error retrieving documents:", error);
