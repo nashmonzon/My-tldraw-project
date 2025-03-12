@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Editor, Tldraw, type TLEventMapHandler } from "tldraw";
+import {
+  type Editor,
+  Tldraw,
+  TLEditorSnapshot,
+  type TLEventMapHandler,
+} from "tldraw";
 import { trpc } from "@/lib/trpc/client";
 import { Button } from "@/components/ui/button";
 import { Loader2, Save, Square, Palette, Home } from "lucide-react";
@@ -10,7 +15,7 @@ import Link from "next/link";
 import "tldraw/tldraw.css";
 import { ErrorBoundary } from "./error-boundary";
 
-import { DocumentClient } from "@/lib/document-store";
+import type { DocumentClient } from "@/lib/document-store";
 
 interface EditorPageProps {
   documentId: string;
@@ -156,15 +161,15 @@ export default function EditorPage({
     });
   }, [editorRef]);
 
-  const loadDocument = useCallback(() => {
-    if (editorRef) {
+  const loadDocument = useCallback(
+    (editor: Editor) => {
       if (!initialDocumentData || !isInitialLoadRef.current) {
         setIsLoading(false);
         return;
       }
 
       try {
-        editorRef.store.loadSnapshot(initialDocumentData);
+        editor.loadSnapshot(initialDocumentData as Partial<TLEditorSnapshot>);
         isInitialLoadRef.current = false;
         setIsLoading(false);
         toast.success("Document loaded", {
@@ -175,11 +180,11 @@ export default function EditorPage({
         toast.error("Error loading document", {
           description: "Could not load the document data.",
         });
-
         setIsLoading(false);
       }
-    }
-  }, [editorRef, initialDocumentData]);
+    },
+    [initialDocumentData]
+  );
 
   useEffect(() => {
     if (!editorRef) return;
@@ -261,7 +266,6 @@ export default function EditorPage({
   useEffect(() => {
     const safetyTimeout = setTimeout(() => {
       if (isLoading) {
-        console.warn("Safety timeout triggered: forcing load completion");
         setIsLoading(false);
       }
     }, 5000);
@@ -272,7 +276,7 @@ export default function EditorPage({
   const handleMount = useCallback(
     (editor: Editor) => {
       setEditorRef(editor);
-      loadDocument();
+      loadDocument(editor);
     },
     [loadDocument]
   );
