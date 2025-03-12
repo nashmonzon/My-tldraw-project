@@ -26,7 +26,6 @@ export function AIChatPanel({ isOpen }: AIChatPanelProps) {
     });
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Scroll al final cuando los mensajes cambian
   useEffect(() => {
     if (messagesEndRef.current && isOpen) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -54,7 +53,6 @@ export function AIChatPanel({ isOpen }: AIChatPanelProps) {
             </div>
           )}
 
-          {/* Mensajes */}
           <div className="p-4 space-y-4">
             {messages.length === 0 ? (
               <div className="text-center text-muted-foreground py-6">
