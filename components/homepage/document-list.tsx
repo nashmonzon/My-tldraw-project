@@ -1,4 +1,4 @@
-import { DocumentClient } from "@/lib/document-store";
+import { Document } from "@/lib/document-store";
 import { TabsContent } from "../ui/tabs";
 import { ScrollArea } from "../ui/scroll-area";
 
@@ -12,7 +12,7 @@ export const DocumentList = ({
   isLoading,
   searchQuery,
 }: {
-  documents: DocumentClient[];
+  documents: Document[];
   isLoading: boolean;
   searchQuery: string;
 }) => {

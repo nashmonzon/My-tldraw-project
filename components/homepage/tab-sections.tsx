@@ -1,6 +1,6 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DocumentClient } from "@/lib/document-store";
+import { Document } from "@/lib/document-store";
 import { DocumentList } from "./document-list";
 import { RecentDocuments } from "./recent-documents";
 
@@ -9,9 +9,9 @@ interface TabSectionsProps extends TabContentProps {
 }
 
 export interface TabContentProps {
-  documents: DocumentClient[];
-  filteredDocuments: DocumentClient[];
-  recentDocuments: DocumentClient[];
+  documents: Document[];
+  filteredDocuments: Document[];
+  recentDocuments: Document[];
   isLoading: boolean;
   searchQuery: string;
 }

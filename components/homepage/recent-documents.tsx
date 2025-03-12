@@ -3,7 +3,7 @@ import { ScrollArea } from "../ui/scroll-area";
 
 import { Clock } from "lucide-react";
 
-import { DocumentClient } from "@/lib/document-store";
+import { Document } from "@/lib/document-store";
 import { DocumentCardSkeleton } from "../skeleton/card-skeleton";
 import { DocumentCard } from "./document-card";
 
@@ -11,7 +11,7 @@ export const RecentDocuments = ({
   documents,
   isLoading,
 }: {
-  documents: DocumentClient[];
+  documents: Document[];
   isLoading: boolean;
 }) => {
   return (

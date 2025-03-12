@@ -1,4 +1,4 @@
-import { Clock, FileIcon, Trash2, Edit } from "lucide-react";
+import { Clock, FileIcon, Trash2 } from "lucide-react";
 import { DateTime } from "luxon";
 import {
   Card,

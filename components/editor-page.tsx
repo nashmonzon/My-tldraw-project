@@ -15,11 +15,11 @@ import Link from "next/link";
 import "tldraw/tldraw.css";
 import { ErrorBoundary } from "./error-boundary";
 
-import type { DocumentClient } from "@/lib/document-store";
+import type { Document } from "@/lib/document-store";
 
 interface EditorPageProps {
   documentId: string;
-  initialDocumentData: DocumentClient["data"];
+  initialDocumentData: Document["data"];
   documentTitle?: string;
 }
 

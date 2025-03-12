@@ -16,14 +16,6 @@ export interface Document {
     assets: Record<string, unknown>;
   };
 }
-export interface DocumentClient {
-  id: string;
-  title: string;
-  createdAt: string;
-  updatedAt: string;
-  data: Document["data"];
-}
-
 export type Error = TRPCClientErrorLike<{
   errorShape: DefaultErrorShape;
   transformer: false;
