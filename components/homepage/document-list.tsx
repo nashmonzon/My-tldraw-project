@@ -18,22 +18,22 @@ export const DocumentList = ({
     <TabsContent value="all" className="flex-grow flex flex-col p-0 m-0 h-full">
       <ScrollArea className="h-[calc(100vh-320px)] min-h-[400px]">
         <div className="p-6">
-          {documents && documents.length > 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, index) => (
+                <DocumentCardSkeleton key={`skeleton-${index}`} />
+              ))}
+            </div>
+          ) : documents && documents.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {documents.map((doc) => (
-                <>
-                  {isLoading ? (
-                    <DocumentCardSkeleton />
-                  ) : (
-                    <DocumentCard
-                      key={doc.id}
-                      id={doc.id}
-                      title={doc.title}
-                      updatedAt={doc.updatedAt}
-                      href={`/editor/${doc.id}`}
-                    />
-                  )}
-                </>
+                <DocumentCard
+                  key={doc.id}
+                  id={doc.id}
+                  title={doc.title}
+                  updatedAt={doc.updatedAt}
+                  href={`/editor/${doc.id}`}
+                />
               ))}
             </div>
           ) : (
