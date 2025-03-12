@@ -36,6 +36,7 @@ export default function HomePage({ initialDocuments }: HomePageProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const {
     data: documents,
@@ -47,14 +48,21 @@ export default function HomePage({ initialDocuments }: HomePageProps) {
   });
 
   const createDocument = trpc.document.createDocument.useMutation({
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
+      setIsRedirecting(true);
       toast.success("Document created", {
-        description: `"${data.title}" has been created successfully.`,
+        description: `"${data.title}" has been created successfully. Redirecting...`,
       });
       setIsDialogOpen(false);
-      refetch().then(() => {
-        router.push(`/editor/${data.id}`);
-      });
+
+      try {
+        await refetch();
+        await router.push(`/editor/${data.id}`);
+      } catch (error) {
+        console.error("Error redirecting to editor", error);
+        toast.error("Error redirecting to editor");
+        setIsRedirecting(false);
+      }
     },
     onError: (error) => {
       toast.error("Failed to create document", {
@@ -114,6 +122,7 @@ export default function HomePage({ initialDocuments }: HomePageProps) {
             setNewDocTitle={setNewDocTitle}
             handleCreateDocument={handleCreateDocument}
             createDocument={createDocument}
+            isRedirecting={isRedirecting}
           />
         </div>
       </div>
@@ -179,6 +188,7 @@ const CreateDocumentDialog = ({
   setNewDocTitle,
   handleCreateDocument,
   createDocument,
+  isRedirecting,
 }: {
   isDialogOpen: boolean;
   setIsDialogOpen: (open: boolean) => void;
@@ -186,38 +196,48 @@ const CreateDocumentDialog = ({
   setNewDocTitle: (title: string) => void;
   handleCreateDocument: () => void;
   createDocument: { isPending: boolean };
+  isRedirecting: boolean;
 }) => {
   return (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+    <Dialog open={isDialogOpen || isRedirecting} onOpenChange={setIsDialogOpen}>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Create New Document</DialogTitle>
-          <DialogDescription>
-            Give your document a title to get started.
-          </DialogDescription>
-        </DialogHeader>
-        <Input
-          value={newDocTitle}
-          onChange={(e) => setNewDocTitle(e.target.value)}
-          placeholder="Document title"
-          className="my-4"
-        />
-        <DialogFooter>
-          <Button
-            onClick={handleCreateDocument}
-            disabled={createDocument.isPending}
-            className="w-full sm:w-auto"
-          >
-            {createDocument.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating...
-              </>
-            ) : (
-              "Create Document"
-            )}
-          </Button>
-        </DialogFooter>
+        {isRedirecting ? (
+          <div className="flex flex-col items-center justify-center p-8 gap-4">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-muted-foreground">Redirecting to editor...</p>
+          </div>
+        ) : (
+          <>
+            <DialogHeader>
+              <DialogTitle>Create New Document</DialogTitle>
+              <DialogDescription>
+                Give your document a title to get started.
+              </DialogDescription>
+            </DialogHeader>
+            <Input
+              value={newDocTitle}
+              onChange={(e) => setNewDocTitle(e.target.value)}
+              placeholder="Document title"
+              className="my-4"
+            />
+            <DialogFooter>
+              <Button
+                onClick={handleCreateDocument}
+                disabled={createDocument.isPending}
+                className="w-full sm:w-auto"
+              >
+                {createDocument.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  "Create Document"
+                )}
+              </Button>
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
