@@ -1,6 +1,6 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DocumentClient } from "@/lib/document-store";
+import { Document } from "@/lib/document-store";
 import { DocumentList } from "./document-list";
 import { RecentDocuments } from "./recent-documents";
 
@@ -9,9 +9,9 @@ interface TabSectionsProps extends TabContentProps {
 }
 
 export interface TabContentProps {
-  documents: DocumentClient[];
-  filteredDocuments: DocumentClient[];
-  recentDocuments: DocumentClient[];
+  documents: Document[];
+  filteredDocuments: Document[];
+  recentDocuments: Document[];
   isLoading: boolean;
   searchQuery: string;
 }
@@ -36,7 +36,7 @@ export function TabSections({
             value={tabValue}
             className="flex-grow flex flex-col p-0 m-0 h-full"
           >
-            <ScrollArea className="h-[calc(100vh-320px)] min-h-[400px] dark:bg-zinc-900">
+            <ScrollArea className="h-[calc(100vh-320px)] min-h-[400px]">
               <div className="p-6">{getTabContent(tabValue, props)}</div>
             </ScrollArea>
           </TabsContent>

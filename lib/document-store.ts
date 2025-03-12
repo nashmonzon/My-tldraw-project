@@ -7,8 +7,8 @@ import { DefaultErrorShape } from "@trpc/server/unstable-core-do-not-import";
 export interface Document {
   id: string;
   title: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   data: {
     version: number;
     shapes: Record<string, unknown>;
@@ -16,14 +16,6 @@ export interface Document {
     assets: Record<string, unknown>;
   };
 }
-export interface DocumentClient {
-  id: string;
-  title: string;
-  createdAt: string;
-  updatedAt: string;
-  data: Document["data"];
-}
-
 export type Error = TRPCClientErrorLike<{
   errorShape: DefaultErrorShape;
   transformer: false;
@@ -68,8 +60,8 @@ class DocumentStore {
           const now = new Date();
           this.documents[doc.id] = {
             ...doc,
-            createdAt: now,
-            updatedAt: now,
+            createdAt: now.toISOString(),
+            updatedAt: now.toISOString(),
           };
         });
 
@@ -127,8 +119,8 @@ class DocumentStore {
     const newDoc: Document = {
       id,
       title,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
       data: {
         version: 1,
         shapes: {},
@@ -158,13 +150,33 @@ class DocumentStore {
       ...this.documents[id],
       title: title || this.documents[id].title,
       data,
-      updatedAt: new Date(),
+      updatedAt: new Date().toISOString(),
     };
+
+    await this.save();
+    return true;
+  }
+  public async deleteDocument(id: string): Promise<boolean> {
+    await this.init();
+
+    if (!this.documents[id]) {
+      return false;
+    }
+
+    delete this.documents[id];
+
+    await this.save();
+    return true;
+  }
+
+  public async deleteAllDocuments(): Promise<boolean> {
+    await this.init();
+
+    this.documents = {};
 
     await this.save();
     return true;
   }
 }
 
-// Exportar una instancia única
 export const documentStore = DocumentStore.getInstance();

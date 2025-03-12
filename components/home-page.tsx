@@ -1,10 +1,7 @@
 "use client";
-
 import { useState } from "react";
 
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -15,18 +12,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { PlusIcon, PenToolIcon, Loader2, Search } from "lucide-react";
+import {
+  PlusIcon,
+  PenToolIcon,
+  Loader2,
+  Search,
+  FileIcon,
+  Trash2,
+} from "lucide-react";
 import { trpc } from "@/lib/trpc/client";
-
 import { toast } from "sonner";
-
-import { DocumentClient } from "@/lib/document-store";
-
+import { Document } from "@/lib/document-store";
 import { Card } from "./ui/card";
 import { TabSections } from "./homepage/tab-sections";
+import { useRouter } from "next/navigation";
 
 interface HomePageProps {
-  initialDocuments: DocumentClient[];
+  initialDocuments: Document[];
 }
 
 export default function HomePage({ initialDocuments }: HomePageProps) {
@@ -38,7 +40,6 @@ export default function HomePage({ initialDocuments }: HomePageProps) {
   const {
     data: documents,
     isLoading,
-
     refetch,
   } = trpc.document.getDocuments.useQuery(undefined, {
     refetchOnWindowFocus: false,
@@ -62,8 +63,24 @@ export default function HomePage({ initialDocuments }: HomePageProps) {
     },
   });
 
+  const deleteAllDocuments = trpc.document.deleteAllDocuments.useMutation({
+    onSuccess: () => {
+      toast.success("All documents deleted");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error("Failed to delete all documents", {
+        description: error.message,
+      });
+    },
+  });
+
   const handleCreateDocument = () => {
     createDocument.mutate({ title: newDocTitle || "Untitled Document" });
+  };
+
+  const handleDeleteAllDocuments = () => {
+    deleteAllDocuments.mutate();
   };
 
   const filteredDocuments = documents?.filter((doc) =>
@@ -78,7 +95,6 @@ export default function HomePage({ initialDocuments }: HomePageProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-background/90 flex flex-col">
-      {/* Hero section */}
       <div className="py-12 px-4 flex-shrink-0">
         <div className="container max-w-5xl mx-auto flex flex-col items-center text-center">
           <div className="mb-6 p-4 rounded-full bg-primary/10 animate-pulse">
@@ -87,7 +103,7 @@ export default function HomePage({ initialDocuments }: HomePageProps) {
           <h1 className="text-4xl md:text-6xl font-bold tracking-tighter mb-4 bg-gradient-to-r from-primary to-primary/70 dark:from-primary dark:to-primary/80 bg-clip-text text-transparent">
             tldraw Editor
           </h1>
-          <p className="text-xl text-muted-foreground max-w-[42rem] ">
+          <p className="text-xl text-muted-foreground max-w-[42rem]">
             Create, design, and collaborate with our powerful drawing tool
             powered by tldraw
           </p>
@@ -106,7 +122,10 @@ export default function HomePage({ initialDocuments }: HomePageProps) {
         <Card className="flex-grow flex flex-col overflow-hidden">
           <div className="p-6 border-b flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-              <h2 className="text-2xl font-bold">Your Documents</h2>
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <FileIcon className="h-6 w-6" />
+                Your Documents
+              </h2>
               <p className="text-muted-foreground text-sm mt-1">
                 {documents?.length || 0} documents available
               </p>
@@ -130,6 +149,14 @@ export default function HomePage({ initialDocuments }: HomePageProps) {
                   </Button>
                 </DialogTrigger>
               </Dialog>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteAllDocuments}
+                disabled={deleteAllDocuments.isPending}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete All
+              </Button>
             </div>
           </div>
 
@@ -145,7 +172,6 @@ export default function HomePage({ initialDocuments }: HomePageProps) {
     </div>
   );
 }
-
 const CreateDocumentDialog = ({
   isDialogOpen,
   setIsDialogOpen,
