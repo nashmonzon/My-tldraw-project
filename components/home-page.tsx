@@ -39,14 +39,12 @@ export default function HomePage({ initialDocuments }: HomePageProps) {
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   const {
-    data: documents,
+    data: documents = initialDocuments,
     isLoading,
     refetch,
   } = trpc.document.getDocuments.useQuery(undefined, {
     refetchOnWindowFocus: false,
-    initialData: initialDocuments,
   });
-
   const createDocument = trpc.document.createDocument.useMutation({
     onSuccess: async (data) => {
       setIsRedirecting(true);
@@ -84,7 +82,15 @@ export default function HomePage({ initialDocuments }: HomePageProps) {
   });
 
   const handleCreateDocument = () => {
-    createDocument.mutate({ title: newDocTitle || "Untitled Document" });
+    const trimmedTitle = newDocTitle.trim();
+
+    const finalTitle = trimmedTitle || "Untitled Document";
+
+    createDocument.mutate({
+      title: finalTitle,
+    });
+
+    setNewDocTitle("");
   };
 
   const handleDeleteAllDocuments = () => {
@@ -219,11 +225,13 @@ const CreateDocumentDialog = ({
               onChange={(e) => setNewDocTitle(e.target.value)}
               placeholder="Document title"
               className="my-4"
+              onBlur={(e) => setNewDocTitle(e.target.value.trim())}
+              required
             />
             <DialogFooter>
               <Button
                 onClick={handleCreateDocument}
-                disabled={createDocument.isPending}
+                disabled={createDocument.isPending || !newDocTitle.trim()}
                 className="w-full sm:w-auto"
               >
                 {createDocument.isPending ? (

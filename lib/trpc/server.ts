@@ -11,13 +11,19 @@ export const appRouter = t.router({
       try {
         const documents = await documentStore.getDocuments();
 
-        return documents.map((doc) => ({
-          id: doc.id,
-          title: doc.title,
-          createdAt: doc.createdAt,
-          updatedAt: doc.updatedAt,
-          data: doc.data,
-        }));
+        return documents
+          .map((doc) => ({
+            id: doc.id,
+            title: doc.title,
+            createdAt: doc.createdAt,
+            updatedAt: doc.updatedAt,
+            data: doc.data,
+          }))
+          .sort((a, b) => {
+            return (
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+          });
       } catch (error) {
         console.error("Error retrieving documents:", error);
         throw new TRPCError({

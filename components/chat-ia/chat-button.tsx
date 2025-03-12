@@ -28,7 +28,6 @@ export function AIChatButton() {
         )}
       </Button>
 
-      {/* Panel de Chat */}
       <div
         className={cn(
           "fixed bottom-0 right-0 z-40 w-full sm:w-[400px] transition-transform duration-300 ease-in-out",
