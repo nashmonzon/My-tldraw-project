@@ -24,10 +24,10 @@ A simple yet powerful drawing editor built with Next.js, tldraw, and tRPC.
 
 ### Step 1: Clone the Repository
 
-````bash
+```bash
 git clone https://github.com/nashmonzon/My-tldraw-project.git
 cd tldraw-editor
-````
+```
 
 ### Step 2: Install Dependencies
 
@@ -35,7 +35,7 @@ Using pnpm (recommended):
 
 ```shellscript
 pnpm install
-````
+```
 
 Alternative package managers:
 
