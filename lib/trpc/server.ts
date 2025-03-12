@@ -1,6 +1,7 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { documentStore } from "../document-store";
+import { revalidatePath } from "next/cache";
 
 const t = initTRPC.create();
 
@@ -68,6 +69,7 @@ export const appRouter = t.router({
       .mutation(async ({ input }) => {
         try {
           const newDoc = await documentStore.createDocument(input.title);
+          revalidatePath("/");
 
           return {
             id: newDoc.id,

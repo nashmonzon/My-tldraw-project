@@ -7,8 +7,8 @@ import { DefaultErrorShape } from "@trpc/server/unstable-core-do-not-import";
 export interface Document {
   id: string;
   title: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   data: {
     version: number;
     shapes: Record<string, unknown>;
@@ -68,8 +68,8 @@ class DocumentStore {
           const now = new Date();
           this.documents[doc.id] = {
             ...doc,
-            createdAt: now,
-            updatedAt: now,
+            createdAt: now.toISOString(),
+            updatedAt: now.toISOString(),
           };
         });
 
@@ -127,8 +127,8 @@ class DocumentStore {
     const newDoc: Document = {
       id,
       title,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
       data: {
         version: 1,
         shapes: {},
@@ -158,7 +158,7 @@ class DocumentStore {
       ...this.documents[id],
       title: title || this.documents[id].title,
       data,
-      updatedAt: new Date(),
+      updatedAt: new Date().toISOString(),
     };
 
     await this.save();

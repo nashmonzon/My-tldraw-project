@@ -36,7 +36,7 @@ export function TabSections({
             value={tabValue}
             className="flex-grow flex flex-col p-0 m-0 h-full"
           >
-            <ScrollArea className="h-[calc(100vh-320px)] min-h-[400px] dark:bg-zinc-900">
+            <ScrollArea className="h-[calc(100vh-320px)] min-h-[400px]">
               <div className="p-6">{getTabContent(tabValue, props)}</div>
             </ScrollArea>
           </TabsContent>
