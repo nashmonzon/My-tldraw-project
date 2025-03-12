@@ -64,9 +64,7 @@ export const DocumentCard = ({
         </CardContent>
         <CardFooter className="text-sm text-muted-foreground bg-muted/30 dark:bg-muted/20 py-3 border-t border-border/50">
           <div className="flex items-center justify-center gap-2">
-            <span className="text-muted-foreground/80">
-              Last edited by: John Doe
-            </span>
+            <span className="text-muted-foreground/80">Last edited by: Me</span>
           </div>
         </CardFooter>
         <Button
