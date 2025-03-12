@@ -16,6 +16,7 @@ import "tldraw/tldraw.css";
 import { ErrorBoundary } from "./error-boundary";
 
 import type { Document } from "@/lib/document-store";
+import { ThemeToggle } from "./theme-toggle";
 
 interface EditorPageProps {
   documentId: string;
@@ -294,6 +295,7 @@ export default function EditorPage({
             <h1 className="text-xl font-bold">{documentTitle}</h1>
           </div>
           <div className="flex gap-2">
+            <ThemeToggle />
             <Button
               variant="outline"
               onClick={addSquare}
