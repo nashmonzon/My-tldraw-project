@@ -10,14 +10,39 @@ import {
 } from "../ui/card";
 import Link from "next/link";
 import { Button } from "../ui/button";
+import { trpc } from "@/lib/trpc/client";
+import { toast } from "sonner";
 
 interface DocumentCardProps {
   title: string;
   updatedAt: string;
   href: string;
+  id: string;
 }
 
-export const DocumentCard = ({ title, updatedAt, href }: DocumentCardProps) => {
+export const DocumentCard = ({
+  title,
+  updatedAt,
+  href,
+  id,
+}: DocumentCardProps) => {
+  const { refetch } = trpc.document.getDocuments.useQuery(undefined);
+  const deleteDocument = trpc.document.deleteDocument.useMutation({
+    onSuccess: () => {
+      toast.success("Document deleted");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error("Failed to delete document", {
+        description: error.message,
+      });
+    },
+  });
+
+  const handleDeleteDocument = (id: string) => {
+    deleteDocument.mutate({ id });
+  };
+
   return (
     <Link href={href} className="block group">
       <Card className="h-full transition-all duration-300 hover:shadow-xl dark:hover:shadow-primary/20 hover:-translate-y-2 border-border/50 overflow-hidden relative">
@@ -38,17 +63,24 @@ export const DocumentCard = ({ title, updatedAt, href }: DocumentCardProps) => {
           </div>
         </CardContent>
         <CardFooter className="text-sm text-muted-foreground bg-muted/30 dark:bg-muted/20 py-3 border-t border-border/50">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex items-center gap-2"
-            >
-              <Trash2 className="h-4 w-4" />
-              Delete
-            </Button>
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-muted-foreground/80">
+              Last edited by: John Doe
+            </span>
           </div>
         </CardFooter>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-2 right-2"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleDeleteDocument(id);
+          }}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
       </Card>
     </Link>
   );

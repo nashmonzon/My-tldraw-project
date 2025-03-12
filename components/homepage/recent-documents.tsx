@@ -1,8 +1,6 @@
 import { TabsContent } from "../ui/tabs";
 import { ScrollArea } from "../ui/scroll-area";
-
 import { Clock } from "lucide-react";
-
 import { Document } from "@/lib/document-store";
 import { DocumentCardSkeleton } from "../skeleton/card-skeleton";
 import { DocumentCard } from "./document-card";
@@ -28,6 +26,7 @@ export const RecentDocuments = ({
               {documents.slice(0, 6).map((doc) => (
                 <DocumentCard
                   key={doc.id}
+                  id={doc.id}
                   title={doc.title}
                   updatedAt={doc.updatedAt}
                   href={`/editor/${doc.id}`}
@@ -35,12 +34,17 @@ export const RecentDocuments = ({
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 border rounded-lg bg-muted/5 dark:bg-muted/10">
-              <Clock className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">No recent documents</h3>
-              <p className="text-muted-foreground mb-4">
-                Your recently edited documents will appear here
-              </p>
+            <div className="text-center py-12 border rounded-lg bg-muted/10 dark:bg-muted/20">
+              <div className="flex flex-col items-center justify-center gap-4">
+                <Clock className="h-16 w-16 text-muted-foreground/50" />
+                <h3 className="text-xl font-semibold text-foreground">
+                  No recent documents
+                </h3>
+                <p className="text-muted-foreground max-w-md text-center">
+                  Your recently edited documents will appear here. Start by
+                  creating a new document or editing an existing one.
+                </p>
+              </div>
             </div>
           )}
         </div>

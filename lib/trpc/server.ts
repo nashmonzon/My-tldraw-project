@@ -121,6 +121,58 @@ export const appRouter = t.router({
           });
         }
       }),
+    deleteDocument: t.procedure
+      .input(z.object({ id: z.string() }))
+      .mutation(async ({ input }) => {
+        try {
+          const success = await documentStore.deleteDocument(input.id);
+
+          if (!success) {
+            throw new TRPCError({
+              code: "NOT_FOUND",
+              message: `Document with ID ${input.id} not found`,
+            });
+          }
+
+          revalidatePath("/");
+
+          return { success: true };
+        } catch (error) {
+          console.error("Error deleting document:", error);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message:
+              error instanceof Error
+                ? error.message
+                : "Failed to delete document",
+          });
+        }
+      }),
+
+    deleteAllDocuments: t.procedure.mutation(async () => {
+      try {
+        const success = await documentStore.deleteAllDocuments();
+
+        if (!success) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to delete all documents",
+          });
+        }
+        revalidatePath("/");
+
+        return { success: true };
+      } catch (error) {
+        console.error("Error deleting all documents:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to delete all documents",
+        });
+      }
+    }),
   }),
 });
 

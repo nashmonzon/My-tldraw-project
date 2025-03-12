@@ -156,7 +156,27 @@ class DocumentStore {
     await this.save();
     return true;
   }
+  public async deleteDocument(id: string): Promise<boolean> {
+    await this.init();
+
+    if (!this.documents[id]) {
+      return false;
+    }
+
+    delete this.documents[id];
+
+    await this.save();
+    return true;
+  }
+
+  public async deleteAllDocuments(): Promise<boolean> {
+    await this.init();
+
+    this.documents = {};
+
+    await this.save();
+    return true;
+  }
 }
 
-// Exportar una instancia única
 export const documentStore = DocumentStore.getInstance();
